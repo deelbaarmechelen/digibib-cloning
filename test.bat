@@ -1,0 +1,1 @@
+Powershell.exe -Command C:\Users\deelbaar\Documents\script\Run.ps1

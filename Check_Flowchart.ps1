@@ -1,4 +1,3 @@
-
 [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
 [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -16,11 +15,19 @@ $Serial_Inventory_Check = "2"
 $Body_PUT = @{ 
 serial = "$Serial_Local"
 }
+$Environment_variabel_OK = "0"
+$Set_Master = "0"
+$Environment_variabel = ${env:Test-DeelbaarM}
+$Win10_Key = "0"
+$Win10_Key_On_MotherBoard = "0"
+$EindTextBox = "0"
 $header = @{"Authorization" ="Bearer "+$bearer_token}
 $url = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$Local_PC_Name"
 $url2 = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$Local_PC_Name2"
 $url3 = "https://inventory.deelbaarmechelen.be/api/v1/hardware/byserial/$Serial_Local"
 $Asset_tag_test = (Invoke-RestMethod -Method Get -Uri $url -Headers $header).asset_tag
+
+
 
 If ($Asset_tag_test -eq $Local_PC_Name) {
 Write-Host "bestaat al" <#Nog aan te passen#>
@@ -66,7 +73,9 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 }
 
 
-$url2 = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$Local_PC_Name2"
+$url2 = "https://test-
+
+ /api/v1/hardware/bytag/$Local_PC_Name2"
 $Asset_tag_test2 = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).asset_tag
 $Serial_asset_check = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).serial
 
@@ -89,7 +98,9 @@ $Body_PUT_JSON = $Body_PUT | ConvertTo-Json
 $ContentType = "application/json"
 Invoke-RestMethod -Method PUT -Uri $url_PUT -Headers $header -Body $Body_PUT_JSON -ContentType $ContentType #>
 
-exit}
+#exit
+<#Waarvoor dient deze exit#>
+}
 Else{
 Add-Type -AssemblyName PresentationFramework
 $msgBoxInput =  [System.Windows.MessageBox]::Show('Computernaam was niet terug te vinden of serial nr. kwam niet overeen, opnieuw ingeven (YES) of script afbreken (NO)?','Deelbaarmechelen Clone station','YesNo','Error')
@@ -135,7 +146,9 @@ $url2 = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$Local_PC_N
 $Asset_tag_test2 = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).asset_tag
 
 }
-} 'No' {exit}}
+} 'No' {exit
+<#Waarvoor dient deze exit#>
+}}
 
 
 }
@@ -158,8 +171,6 @@ $Serial_test = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).seria
 if ($Serial_test -eq $Serial_Local) {
 Write-Host "Serienummer stemt overeen"
 $Serial_Inventory_Check = (Invoke-RestMethod -Method Get -Uri $url3 -Headers $header).total
-<#Checken of serialnummer bij asset_tag hoort#>
-<#Toekomstige PUT#>
 }
 Else {
 Write-Host "Serienummer stemt niet overeen met asset"
@@ -215,13 +226,43 @@ Write-Host "Update local name"
 $Inventory_PC_Name = (Invoke-RestMethod -Method Get -Uri $url3 -Headers $header).rows.asset_tag
 rename-computer -NewName "$Inventory_PC_Name" 
 $env:computername
+$url_STATUS = (Invoke-RestMethod -Method Get -Uri $url -Headers $header)
+$status_id = $url_STATUS.status_label.id
+$url4 = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$Inventory_PC_Name"
+$ID = (Invoke-RestMethod -Method Get -Uri $url4 -Headers $header).id
+$url_PUT = "https://inventory.deelbaarmechelen.be/api/v1/hardware/$ID"
+$TvLogin = (Get-ItemProperty HKLM:\SOFTWARE\WOW6432Node\TeamViewer\).ClientID
+
+
+
+
+$Body_PUT = @{ 
+ _snipeit_teamviewer_login_3= "$TvLogin"
+ status_id ="$status_id" 
+}
+
+$Body_PUT_JSON = $Body_PUT | ConvertTo-Json
+$ContentType = "application/json"
+Invoke-RestMethod -Method PUT -Uri $url_PUT -Headers $header -Body $Body_PUT_JSON -ContentType $ContentType
+
 
 }
+
+
+If ($Environment_variabel -Match 'DB')
+    {$Environment_variabel_OK = "1"}
+    Else
+    {$Environment_variabel_OK = "0"}
+
 
 if ($Serial_Inventory_Check -eq 0){
 Add-Type -AssemblyName PresentationFramework
 $msgBoxInput =  [System.Windows.MessageBox]::Show('Serienummer staat niet in de inventaris, wilt u een volledig nieuwe asset aanmaken?','Deelbaarmechelen Clone station','YesNo','Error')
 switch  ($msgBoxInput) { 'Yes' 
+{
+If ($Environment_variabel_OK -eq 1)
+{$Set_Master = $Environment_variabel}
+    Else
 {
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'Data Entry Form'
@@ -257,6 +298,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 {
     $x = $textBox.Text
     $x
+}
 }
 
 
@@ -310,7 +352,9 @@ $header = @{"Authorization" ="Bearer "+$bearer_token}
 <#
 $url_GET = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/DB-20-001"
 #>
-$url_GET = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$x"
+If($Environment_variabel_OK -eq 1){$url_GET = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$Set_Master"}
+    Else
+    {$url_GET = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$x"}
 
 Invoke-RestMethod -Method Get -Uri $url_GET -Headers $header
 
@@ -357,96 +401,36 @@ Invoke-RestMethod -Method POST -Uri $url_POST -Headers $header -Body $Body
 
 $GET_local_Name= (Invoke-RestMethod -Method Get -Uri $url3 -Headers $header).rows.asset_tag
 rename-computer -NewName "$GET_local_Name" 
-$env:computername
+Write-Host "Oude naam is $env:computername"
+Write-Host "Nieuwe naam is $Get_local_Name"
+$EindTextBox = "1"
 
+slmgr /xpr
 
-<#Get-Content -Path $ScriptDir\POST_3.ps1
+$Win10_Key = (Get-WmiObject -query ‘select * from SoftwareLicensingService’).OA3xOriginalProductKey
+If ($Win10_Key -match "0")
+    {$Win10_Key_On_MotherBoard = "0"}
+    Else
+    {$Win10_Key_On_MotherBoard = "1"}
 
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_Asset_Tag', "$x2"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_status_id', "$Status_id"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_model_id', "$Model_id"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_OS', "$custom_fields_OS"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_Regular_user_password', "$custom_fields_Regular_User_Password"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_Regular_User', "$custom_fields_Regular_User"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_Admin_login', "$custom_fields_Admin_Login"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_Admin_password', "$custom_fields_Admin_Password"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_Teamviewer_password', "$custom_fields_Teamviewer_Password"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_Antivirus', "$custom_fields_Antivirus"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_Update', "$custom_fields_Updates"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-(Get-Content -Path $ScriptDir\POST_3.ps1) |
-    ForEach-Object {$_ -Replace 'Replace_Teamviewer_ID', "$custom_fields_Teamviewer_ID"} |
-        Set-Content -Path $ScriptDir\POST_3.ps1
-Get-Content -Path $ScriptDir\POST_3.ps1
-
-
+<#
+If ($Win10_Key_On_MotherBoard -match "1")
+    {Add-Type -AssemblyName PresentationFramework
+$msgBoxInput =  [System.Windows.MessageBox]::Show("De Win10_Key is $Win10_Key",'Deelbaarmechelen Clone station','YesNo','Error')
+}
+    Else
+    {Write-Host "Geen Win10_Key beschikbaar op Moederbord"}
 #>
 
-} 'No' {exit}}
+If ($EindTextBox -match "1")
+     {Add-Type -AssemblyName PresentationFramework
+$msgBoxInput =  [System.Windows.MessageBox]::Show("Het script heeft correct gelopen; nieuwe PC-naam is $Get_local_Name; Win10_Key is $Win10_Key",'Deelbaarmechelen Clone station','YesNo','Error')
+}
+
+
+
+} 'No' {exit
+<#Waarvoor dient deze exit#>}}
 
 
 }
