@@ -214,7 +214,11 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 {
     $GE1 = $textBox.Text
     $GE1
-    rename-computer -NewName "$GE1" 
+
+    $Creds = get-credential 
+    rename-computer -NewName "$GE1" -domainCredential $Creds
+
+#    rename-computer -NewName "$GE1" 
     $env:computername
 }
 
@@ -224,20 +228,21 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 if ($Serial_Inventory_Check -eq 1){<#PUT in de toekomst#>
 Write-Host "Update local name"
 $Inventory_PC_Name = (Invoke-RestMethod -Method Get -Uri $url3 -Headers $header).rows.asset_tag
-rename-computer -NewName "$Inventory_PC_Name" 
+$Creds = get-credential 
+rename-computer -NewName "$Inventory_PC_Name" -domainCredential $Creds
 $env:computername
 $url_STATUS = (Invoke-RestMethod -Method Get -Uri $url -Headers $header)
 $status_id = $url_STATUS.status_label.id
 $url4 = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$Inventory_PC_Name"
 $ID = (Invoke-RestMethod -Method Get -Uri $url4 -Headers $header).id
 $url_PUT = "https://inventory.deelbaarmechelen.be/api/v1/hardware/$ID"
-$TvLogin = (Get-ItemProperty HKLM:\SOFTWARE\WOW6432Node\TeamViewer\).ClientID
+#$TvLogin = (Get-ItemProperty HKLM:\SOFTWARE\WOW6432Node\TeamViewer\).ClientID
 
 
 
 
 $Body_PUT = @{ 
- _snipeit_teamviewer_login_3= "$TvLogin"
+# _snipeit_teamviewer_login_3= "$TvLogin"
  status_id ="$status_id" 
 }
 
@@ -264,7 +269,9 @@ If ($Environment_variabel_OK -eq 1)
 {$Set_Master = $Environment_variabel}
     Else
 {
-$form = New-Object System.Windows.Forms.Form
+ $x = $local_PC_Name
+ $x
+<#form = New-Object System.Windows.Forms.Form
 $form.Text = 'Data Entry Form'
 $form.Size = New-Object System.Drawing.Size(300,200)
 $form.StartPosition = 'CenterScreen'
@@ -298,7 +305,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 {
     $x = $textBox.Text
     $x
-}
+}#>
 }
 
 
@@ -372,8 +379,8 @@ $RU = $GET_Start.custom_fields.{regular user}.value
 $RUP = $GET_Start.custom_fields.{Regular user password}.value
 $AL = $GET_Start.custom_fields.{Admin login}.value
 $AP = $GET_Start.custom_fields.{Admin password}.value
-$TL = (Get-ItemProperty HKLM:\SOFTWARE\WOW6432Node\TeamViewer\).ClientID
-$TP = $GET_Start.custom_fields.{Teamviewer Password}.value
+#$TL = (Get-ItemProperty HKLM:\SOFTWARE\WOW6432Node\TeamViewer\).ClientID
+#$TP = $GET_Start.custom_fields.{Teamviewer Password}.value
 $A = $GET_Start.custom_fields.Antivirus.value
 $U = $GET_Start.custom_fields.Updates.value
 
@@ -388,8 +395,8 @@ _snipeit_regular_user_9 = "$RU"
 _snipeit_regular_user_password_10 = "$RUP"
 _snipeit_admin_login_7 = "$AL"
 _snipeit_admin_password_8 = "$AP"
-_snipeit_teamviewer_login_3 = "$TL"
-_snipeit_teamviewer_password_4 = "$TP"
+#_snipeit_teamviewer_login_3 = "$TL"
+#_snipeit_teamviewer_password_4 = "$TP"
 _snipeit_antivirus_5 = "$A"
 _snipeit_updates_6 = "$U"
 
@@ -400,7 +407,9 @@ _snipeit_updates_6 = "$U"
 Invoke-RestMethod -Method POST -Uri $url_POST -Headers $header -Body $Body 
 
 $GET_local_Name= (Invoke-RestMethod -Method Get -Uri $url3 -Headers $header).rows.asset_tag
-rename-computer -NewName "$GET_local_Name" 
+$Creds = get-credential 
+rename-computer -NewName "$GET_local_Name" -domainCredential $Creds
+#rename-computer -NewName "$GET_local_Name" 
 Write-Host "Oude naam is $env:computername"
 Write-Host "Nieuwe naam is $Get_local_Name"
 $EindTextBox = "1"
