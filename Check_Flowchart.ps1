@@ -87,15 +87,6 @@ Else {
             $response = "No"
             $Serial_check = "2"
 
-            <# $ID = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).id
-$url_PUT = "https://inventory.deelbaarmechelen.be/api/v1/hardware/$ID"
-$Body_PUT = @{
-serial = "$Serial_local"
-} 
-$Body_PUT_JSON = $Body_PUT | ConvertTo-Json
-$ContentType = "application/json"
-Invoke-RestMethod -Method PUT -Uri $url_PUT -Headers $header -Body $Body_PUT_JSON -ContentType $ContentType #>
-
             #exit
             <#Waarvoor dient deze exit#>
         }
@@ -270,80 +261,7 @@ if ($Serial_Inventory_Check -eq 0) {
             Else {
                 $x = $local_PC_Name
                 $x
-                <#form = New-Object System.Windows.Forms.Form
-$form.Text = 'Data Entry Form'
-$form.Size = New-Object System.Drawing.Size(300,200)
-$form.StartPosition = 'CenterScreen'
-$okButton = New-Object System.Windows.Forms.Button
-$okButton.Location = New-Object System.Drawing.Point(75,120)
-$okButton.Size = New-Object System.Drawing.Size(75,23)
-$okButton.Text = 'OK'
-$okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
-$form.AcceptButton = $OKButton
-$form.Controls.Add($OKButton)
-$cancelButton = New-Object System.Windows.Forms.Button
-$cancelButton.Location = New-Object System.Drawing.Point(150,120)
-$cancelButton.Size = New-Object System.Drawing.Size(75,23)
-$cancelButton.Text = 'Cancel'
-$cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
-$form.CancelButton = $cancelButton
-$form.Controls.Add($cancelButton)
-$label = New-Object System.Windows.Forms.Label
-$label.Location = New-Object System.Drawing.Point(10,20)
-$label.Size = New-Object System.Drawing.Size(280,20)
-$label.Text = 'De Master-Clone die u wenst te kopieeren:'
-$form.Controls.Add($label)
-$textBox = New-Object System.Windows.Forms.TextBox
-$textBox.Location = New-Object System.Drawing.Point(10,40)
-$textBox.Size = New-Object System.Drawing.Size(260,20)
-$form.Controls.Add($textBox)
-$form.Topmost = $true
-$form.Add_Shown({$textBox.Select()})
-$result = $form.ShowDialog()
-if ($result -eq [System.Windows.Forms.DialogResult]::OK)
-{
-    $x = $textBox.Text
-    $x
-}#>
             }
-
-
-            <#$form2 = New-Object System.Windows.Forms.Form
-$form2.Text = 'Data Entry Form'
-$form2.Size = New-Object System.Drawing.Size(300,200)
-$form2.StartPosition = 'CenterScreen'
-$okButton2 = New-Object System.Windows.Forms.Button
-$okButton2.Location = New-Object System.Drawing.Point(75,120)
-$okButton2.Size = New-Object System.Drawing.Size(75,23)
-$okButton2.Text = 'OK'
-$okButton2.DialogResult = [System.Windows.Forms.DialogResult]::OK
-$form2.AcceptButton = $OKButton2
-$form2.Controls.Add($OKButton2)
-$cancelButton2 = New-Object System.Windows.Forms.Button
-$cancelButton2.Location = New-Object System.Drawing.Point(150,120)
-$cancelButton2.Size = New-Object System.Drawing.Size(75,23)
-$cancelButton2.Text = 'Cancel'
-$cancelButton2.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
-$form2.CancelButton = $cancelButton2
-$form2.Controls.Add($cancelButton2)
-$label2 = New-Object System.Windows.Forms.Label
-$label2.Location = New-Object System.Drawing.Point(10,20)
-$label2.Size = New-Object System.Drawing.Size(280,20)
-$label2.Text = 'De Clone die u wenst te maken:'
-$form2.Controls.Add($label2)
-$textBox2 = New-Object System.Windows.Forms.TextBox
-$textBox2.Location = New-Object System.Drawing.Point(10,40)
-$textBox2.Size = New-Object System.Drawing.Size(260,20)
-$form2.Controls.Add($textBox2)
-$form2.Topmost = $true2
-$form2.Add_Shown({$textBox2.Select()})
-$result2 = $form2.ShowDialog()
-if ($result2 -eq [System.Windows.Forms.DialogResult]::OK)
-{
-    $x2 = $textBox2.Text
-    $x2
-}
-#>
 
 
             $ScriptDir = Split-Path $script:MyInvocation.MyCommand.Path
@@ -355,9 +273,6 @@ if ($result2 -eq [System.Windows.Forms.DialogResult]::OK)
 
 
             $header = @{"Authorization" = "Bearer " + $bearer_token }
-            <#
-$url_GET = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/DB-20-001"
-#>
             If ($Environment_variabel_OK -eq 1) { $url_GET = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$Set_Master" }
             Else
             { $url_GET = "https://inventory.deelbaarmechelen.be/api/v1/hardware/bytag/$x" }
