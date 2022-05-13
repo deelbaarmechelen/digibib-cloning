@@ -10,7 +10,8 @@ $bearer_token = "$API_Key"
 $Local_PC_Name =  $env:computername
 $Local_PC_Name2 = "0"
 $Serial_check = "0"
-$Serial_Local =  gwmi win32_bios | select -ExpandProperty SerialNumber
+$baseUrl = "https://deelit.deelbaarmechelen.be"
+$Serial_Local =  Get-CIMInstance win32_bios | select -ExpandProperty SerialNumber
 $Serial_Inventory_Check = "2"
 $Body_PUT = @{ 
 serial = "$Serial_Local"
@@ -22,9 +23,9 @@ $Win10_Key = "0"
 $Win10_Key_On_MotherBoard = "0"
 $EindTextBox = "0"
 $header = @{"Authorization" ="Bearer "+$bearer_token}
-$url = "https://deelit.deelbaarmechelen.be/api/v1/hardware/bytag/$Local_PC_Name"
-$url2 = "https://deelit.deelbaarmechelen.be/api/v1/hardware/bytag/$Local_PC_Name2"
-$url3 = "https://deelit.deelbaarmechelen.be/api/v1/hardware/byserial/$Serial_Local"
+$url = $baseUrl+ "/api/v1/hardware/bytag/$Local_PC_Name"
+$url2 = $baseUrl+ "/api/v1/hardware/bytag/$Local_PC_Name2"
+$url3 = $baseUrl+ "/api/v1/hardware/byserial/$Serial_Local"
 $Asset_tag_test = (Invoke-RestMethod -Method Get -Uri $url -Headers $header).asset_tag
 
 
@@ -73,9 +74,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 }
 
 
-$url2 = "https://test-
-
- /api/v1/hardware/bytag/$Local_PC_Name2"
+$url2 = $baseUrl+ "/api/v1/hardware/bytag/$Local_PC_Name2"
 $Asset_tag_test2 = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).asset_tag
 $Serial_asset_check = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).serial
 
@@ -90,7 +89,7 @@ $response = "No"
 $Serial_check = "2"
 
 <# $ID = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).id
-$url_PUT = "https://deelit.deelbaarmechelen.be/api/v1/hardware/$ID"
+$url_PUT = $baseUrl+ "/api/v1/hardware/$ID"
 $Body_PUT = @{
 serial = "$Serial_local"
 } 
@@ -142,7 +141,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
     $Local_PC_Name2 = $textBox.Text
     $Local_PC_Name2
 
-$url2 = "https://deelit.deelbaarmechelen.be/api/v1/hardware/bytag/$Local_PC_Name2"
+$url2 = $baseUrl+ "/api/v1/hardware/bytag/$Local_PC_Name2"
 $Asset_tag_test2 = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).asset_tag
 
 }
@@ -157,7 +156,7 @@ $Asset_tag_test2 = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).a
 while ($response -eq "Yes")
 }
 
-$url2 = "https://deelit.deelbaarmechelen.be/api/v1/hardware/bytag/$Local_PC_Name2"
+$url2 = $baseUrl+ "/api/v1/hardware/bytag/$Local_PC_Name2"
 
 
 if($Serial_check -eq "1"){
@@ -228,9 +227,9 @@ rename-computer -NewName "$Inventory_PC_Name"
 $env:computername
 $url_STATUS = (Invoke-RestMethod -Method Get -Uri $url -Headers $header)
 $status_id = $url_STATUS.status_label.id
-$url4 = "https://deelit.deelbaarmechelen.be/api/v1/hardware/bytag/$Inventory_PC_Name"
+$url4 = $baseUrl+ "/api/v1/hardware/bytag/$Inventory_PC_Name"
 $ID = (Invoke-RestMethod -Method Get -Uri $url4 -Headers $header).id
-$url_PUT = "https://deelit.deelbaarmechelen.be/api/v1/hardware/$ID"
+$url_PUT =$baseUrl+ "/api/v1/hardware/$ID"
 
 
 
@@ -352,13 +351,13 @@ $url_GET = "https://deelit.deelbaarmechelen.be/api/v1/hardware/bytag/DB-20-001"
 #>
 If($Environment_variabel_OK -eq 1){$url_GET = "https://deelit.deelbaarmechelen.be/api/v1/hardware/bytag/$Set_Master"}
     Else
-    {$url_GET = "https://deelit.deelbaarmechelen.be/api/v1/hardware/bytag/$x"}
+    {$url_GET = $baseUrl+ "/api/v1/hardware/bytag/$x"}
 
 Invoke-RestMethod -Method Get -Uri $url_GET -Headers $header
 
 
   
-$url_POST = 'https://deelit.deelbaarmechelen.be/api/v1/assets'
+$url_POST = $baseUrl+ '/api/v1/assets'
 $GET_Start = (Invoke-RestMethod -Method Get -Uri $url_GET -Headers $header)
 <#$Asset = "$x2"#>
 $notes = ""
