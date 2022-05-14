@@ -2,15 +2,23 @@
 [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-
 $ScriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 Write-Host "Uw scripts staan op $ScriptDir"
-$API_Key = Get-Content -Path $ScriptDir\API-key.ps1
+
+#uncomment to target test environment
+$test_env = 'Y'
+If ($test_env -eq 'Y') {
+    $API_Key = Get-Content -Path $ScriptDir\API-test-key.ps1
+    $baseUrl = "https://deelit.test.deelbaarmechelen.be"
+}
+Else {
+    $API_Key = Get-Content -Path $ScriptDir\API-key.ps1
+    $baseUrl = "https://deelit.deelbaarmechelen.be"
+}    
 $bearer_token = "$API_Key"
 $Local_PC_Name =  $env:computername
 $Local_PC_Name2 = "0"
 $Serial_check = "0"
-$baseUrl = "https://deelit.deelbaarmechelen.be"
 $Serial_Local =  Get-CIMInstance win32_bios | select -ExpandProperty SerialNumber
 $Serial_Inventory_Check = "2"
 $Body_PUT = @{ 
@@ -56,7 +64,7 @@ $form.Controls.Add($cancelButton)
 $label = New-Object System.Windows.Forms.Label
 $label.Location = New-Object System.Drawing.Point(10,20)
 $label.Size = New-Object System.Drawing.Size(280,20)
-$label.Text = 'Geef de nieuwe PC_naam in:'
+$label.Text = 'Geef de nieuwe PC_naam in (zoals ingegeven in inventaris):'
 $form.Controls.Add($label)
 $textBox = New-Object System.Windows.Forms.TextBox
 $textBox.Location = New-Object System.Drawing.Point(10,40)
@@ -75,8 +83,9 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 
 
 $url2 = $baseUrl+ "/api/v1/hardware/bytag/$Local_PC_Name2"
-$Asset_tag_test2 = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).asset_tag
-$Serial_asset_check = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).serial
+$GET2_response = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header)
+$Asset_tag_test2 = $GET2_response.asset_tag
+$Serial_asset_check = $GET2_response.serial
 
 
 do{
@@ -126,7 +135,7 @@ $form.Controls.Add($cancelButton)
 $label = New-Object System.Windows.Forms.Label
 $label.Location = New-Object System.Drawing.Point(10,20)
 $label.Size = New-Object System.Drawing.Size(280,20)
-$label.Text = 'Geef de nieuwe PC_naam in:'
+$label.Text = 'Geef de nieuwe PC_naam in (zoals ingegeven in inventaris):'
 $form.Controls.Add($label)
 $textBox = New-Object System.Windows.Forms.TextBox
 $textBox.Location = New-Object System.Drawing.Point(10,40)
@@ -252,7 +261,7 @@ If ($Environment_variabel -Match 'DB')
     {$Environment_variabel_OK = "0"}
 
 
-if ($Serial_Inventory_Check -eq 0){
+if ($Serial_Inventory_Check -eq 0) {
 Add-Type -AssemblyName PresentationFramework
 $msgBoxInput =  [System.Windows.MessageBox]::Show('Serienummer staat niet in de inventaris, wilt u een volledig nieuwe asset aanmaken?','Deelbaarmechelen Clone station','YesNo','Error')
 switch  ($msgBoxInput) { 'Yes' 
@@ -339,7 +348,7 @@ if ($result2 -eq [System.Windows.Forms.DialogResult]::OK)
 
 $ScriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 Write-Host "Uw scripts staan op $ScriptDir"
-$API_Key = Get-Content -Path $ScriptDir\API-key.ps1
+#$API_Key = Get-Content -Path $ScriptDir\API-key.ps1
 
 $bearer_token = "$API_Key"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -347,9 +356,9 @@ $bearer_token = "$API_Key"
 
 $header = @{"Authorization" ="Bearer "+$bearer_token}
 <#
-$url_GET = "https://deelit.deelbaarmechelen.be/api/v1/hardware/bytag/DB-20-001"
+$url_GET = $baseUrl+ "/api/v1/hardware/bytag/DB-20-001"
 #>
-If($Environment_variabel_OK -eq 1){$url_GET = "https://deelit.deelbaarmechelen.be/api/v1/hardware/bytag/$Set_Master"}
+If($Environment_variabel_OK -eq 1){$url_GET = $baseUrl+ "/api/v1/hardware/bytag/$Set_Master"}
     Else
     {$url_GET = $baseUrl+ "/api/v1/hardware/bytag/$x"}
 
@@ -357,7 +366,7 @@ Invoke-RestMethod -Method Get -Uri $url_GET -Headers $header
 
 
   
-$url_POST = $baseUrl+ '/api/v1/assets'
+$url_POST = $baseUrl+ '/api/v1/hardware'
 $GET_Start = (Invoke-RestMethod -Method Get -Uri $url_GET -Headers $header)
 <#$Asset = "$x2"#>
 $notes = ""
@@ -391,7 +400,8 @@ _snipeit_updates_6 = "$U"
 
 
 
-Invoke-RestMethod -Method POST -Uri $url_POST -Headers $header -Body $Body 
+$POST_response=(Invoke-RestMethod -Method POST -Uri $url_POST -Headers $header -Body $Body) 
+Write-Host "POST response is $POST_response"
 
 $GET_local_Name= (Invoke-RestMethod -Method Get -Uri $url3 -Headers $header).rows.asset_tag
 rename-computer -NewName "$GET_local_Name" 
@@ -401,7 +411,8 @@ $EindTextBox = "1"
 
 slmgr /xpr
 
-$Win10_Key = (Get-WmiObject -query ‘select * from SoftwareLicensingService’).OA3xOriginalProductKey
+#$Win10_Key = (Get-WmiObject -query ï¿½select * from SoftwareLicensingServiceï¿½).OA3xOriginalProductKey
+$Win10_Key = (Get-CIMInstance -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey
 If ($Win10_Key -match "0")
     {$Win10_Key_On_MotherBoard = "0"}
     Else
