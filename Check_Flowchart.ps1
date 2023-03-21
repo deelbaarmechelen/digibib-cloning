@@ -73,8 +73,7 @@ Else {
     $form.Topmost = $true
     $form.Add_Shown({ $textBox.Select() })
     $result = $form.ShowDialog()
-    if ($result -eq [System.Windows.Forms.DialogResult]::OK)
-    {
+    if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
         $Local_PC_Name2 = $textBox.Text
         $Local_PC_Name2
     }
@@ -95,17 +94,6 @@ Else {
             $response = "No"
             $Serial_check = "2"
 
-            <# $ID = (Invoke-RestMethod -Method Get -Uri $url2 -Headers $header).id
-$url_PUT = $baseUrl+ "/api/v1/hardware/$ID"
-$Body_PUT = @{
-serial = "$Serial_local"
-} 
-$Body_PUT_JSON = $Body_PUT | ConvertTo-Json
-$ContentType = "application/json"
-Invoke-RestMethod -Method PUT -Uri $url_PUT -Headers $header -Body $Body_PUT_JSON -ContentType $ContentType #>
-
-            #exit
-            <#Waarvoor dient deze exit#>
         }
         Else {
             Add-Type -AssemblyName PresentationFramework
@@ -305,45 +293,6 @@ if ($Serial_Inventory_Check -eq 0) {
                 }
             }
 
-
-            <#$form2 = New-Object System.Windows.Forms.Form
-$form2.Text = 'Data Entry Form'
-$form2.Size = New-Object System.Drawing.Size(300,200)
-$form2.StartPosition = 'CenterScreen'
-$okButton2 = New-Object System.Windows.Forms.Button
-$okButton2.Location = New-Object System.Drawing.Point(75,120)
-$okButton2.Size = New-Object System.Drawing.Size(75,23)
-$okButton2.Text = 'OK'
-$okButton2.DialogResult = [System.Windows.Forms.DialogResult]::OK
-$form2.AcceptButton = $OKButton2
-$form2.Controls.Add($OKButton2)
-$cancelButton2 = New-Object System.Windows.Forms.Button
-$cancelButton2.Location = New-Object System.Drawing.Point(150,120)
-$cancelButton2.Size = New-Object System.Drawing.Size(75,23)
-$cancelButton2.Text = 'Cancel'
-$cancelButton2.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
-$form2.CancelButton = $cancelButton2
-$form2.Controls.Add($cancelButton2)
-$label2 = New-Object System.Windows.Forms.Label
-$label2.Location = New-Object System.Drawing.Point(10,20)
-$label2.Size = New-Object System.Drawing.Size(280,20)
-$label2.Text = 'De Clone die u wenst te maken:'
-$form2.Controls.Add($label2)
-$textBox2 = New-Object System.Windows.Forms.TextBox
-$textBox2.Location = New-Object System.Drawing.Point(10,40)
-$textBox2.Size = New-Object System.Drawing.Size(260,20)
-$form2.Controls.Add($textBox2)
-$form2.Topmost = $true2
-$form2.Add_Shown({$textBox2.Select()})
-$result2 = $form2.ShowDialog()
-if ($result2 -eq [System.Windows.Forms.DialogResult]::OK)
-{
-    $x2 = $textBox2.Text
-    $x2
-}
-#>
-
-
             $ScriptDir = Split-Path $script:MyInvocation.MyCommand.Path
             Write-Host "Uw scripts staan op $ScriptDir"
             #$API_Key = Get-Content -Path $ScriptDir\API-key.ps1
@@ -353,9 +302,7 @@ if ($result2 -eq [System.Windows.Forms.DialogResult]::OK)
 
 
             $header = @{"Authorization" = "Bearer " + $bearer_token }
-            <#
-$url_GET = $baseUrl+ "/api/v1/hardware/bytag/DB-20-001"
-#>
+
             If ($Environment_variabel_OK -eq 1) { $url_GET = $baseUrl + "/api/v1/hardware/bytag/$Set_Master" }
             Else
             { $url_GET = $baseUrl + "/api/v1/hardware/bytag/$x" }
@@ -409,21 +356,12 @@ $url_GET = $baseUrl+ "/api/v1/hardware/bytag/DB-20-001"
 
             slmgr /xpr
 
-            #$Win10_Key = (Get-WmiObject -query �select * from SoftwareLicensingService�).OA3xOriginalProductKey
             $Win10_Key = (Get-CIMInstance -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey
             If ($Win10_Key -match "0")
             { $Win10_Key_On_MotherBoard = "0" }
             Else
             { $Win10_Key_On_MotherBoard = "1" }
 
-            <#
-If ($Win10_Key_On_MotherBoard -match "1")
-    {Add-Type -AssemblyName PresentationFramework
-$msgBoxInput =  [System.Windows.MessageBox]::Show("De Win10_Key is $Win10_Key",'Deelbaarmechelen Clone station','YesNo','Error')
-}
-    Else
-    {Write-Host "Geen Win10_Key beschikbaar op Moederbord"}
-#>
 
             If ($EindTextBox -match "1") {
                 Add-Type -AssemblyName PresentationFramework
