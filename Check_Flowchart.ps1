@@ -2,6 +2,7 @@
 [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+
 $ScriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 Write-Host "Uw scripts staan op $ScriptDir"
 
@@ -31,6 +32,8 @@ $Win10_Key = "0"
 $Win10_Key_On_MotherBoard = "0"
 $EindTextBox = "0"
 $header = @{"Authorization" = "Bearer " + $bearer_token }
+
+# Check asset exists
 $url = $baseUrl + "/api/v1/hardware/bytag/$Local_PC_Name"
 $url2 = $baseUrl + "/api/v1/hardware/bytag/$Local_PC_Name2"
 $url3 = $baseUrl + "/api/v1/hardware/byserial/$Serial_Local"
@@ -44,34 +47,10 @@ If ($Asset_tag_test -eq $Local_PC_Name) {
 }
 Else {
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = 'Data Entry Form'
-    $form.Size = New-Object System.Drawing.Size(300, 200)
-    $form.StartPosition = 'CenterScreen'
-    $okButton = New-Object System.Windows.Forms.Button
-    $okButton.Location = New-Object System.Drawing.Point(75, 120)
-    $okButton.Size = New-Object System.Drawing.Size(75, 23)
-    $okButton.Text = 'OK'
-    $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
-    $form.AcceptButton = $OKButton
-    $form.Controls.Add($OKButton)
-    $cancelButton = New-Object System.Windows.Forms.Button
-    $cancelButton.Location = New-Object System.Drawing.Point(150, 120)
-    $cancelButton.Size = New-Object System.Drawing.Size(75, 23)
-    $cancelButton.Text = 'Cancel'
-    $cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
-    $form.CancelButton = $cancelButton
-    $form.Controls.Add($cancelButton)
-    $label = New-Object System.Windows.Forms.Label
-    $label.Location = New-Object System.Drawing.Point(10, 20)
-    $label.Size = New-Object System.Drawing.Size(280, 20)
-    $label.Text = 'Geef de nieuwe PC_naam in (zoals ingegeven in inventaris):'
-    $form.Controls.Add($label)
     $textBox = New-Object System.Windows.Forms.TextBox
-    $textBox.Location = New-Object System.Drawing.Point(10, 40)
-    $textBox.Size = New-Object System.Drawing.Size(260, 20)
-    $form.Controls.Add($textBox)
-    $form.Topmost = $true
-    $form.Add_Shown({ $textBox.Select() })
+    $labelText = 'Geef de nieuwe PC_naam in (zoals ingegeven in inventaris):'
+
+    Create-DMDataEntryForm -form $form -textBox $textBox -LabelText $labelText
     $result = $form.ShowDialog()
     if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
         $Local_PC_Name2 = $textBox.Text
@@ -101,35 +80,12 @@ Else {
             switch ($msgBoxInput) {
                 'Yes' {
                     $response = "YES"
+
                     $form = New-Object System.Windows.Forms.Form
-                    $form.Text = 'Data Entry Form'
-                    $form.Size = New-Object System.Drawing.Size(300, 200)
-                    $form.StartPosition = 'CenterScreen'
-                    $okButton = New-Object System.Windows.Forms.Button
-                    $okButton.Location = New-Object System.Drawing.Point(75, 120)
-                    $okButton.Size = New-Object System.Drawing.Size(75, 23)
-                    $okButton.Text = 'OK'
-                    $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
-                    $form.AcceptButton = $OKButton
-                    $form.Controls.Add($OKButton)
-                    $cancelButton = New-Object System.Windows.Forms.Button
-                    $cancelButton.Location = New-Object System.Drawing.Point(150, 120)
-                    $cancelButton.Size = New-Object System.Drawing.Size(75, 23)
-                    $cancelButton.Text = 'Cancel'
-                    $cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
-                    $form.CancelButton = $cancelButton
-                    $form.Controls.Add($cancelButton)
-                    $label = New-Object System.Windows.Forms.Label
-                    $label.Location = New-Object System.Drawing.Point(10, 20)
-                    $label.Size = New-Object System.Drawing.Size(280, 20)
-                    $label.Text = 'Geef de nieuwe PC_naam in (zoals ingegeven in inventaris):'
-                    $form.Controls.Add($label)
                     $textBox = New-Object System.Windows.Forms.TextBox
-                    $textBox.Location = New-Object System.Drawing.Point(10, 40)
-                    $textBox.Size = New-Object System.Drawing.Size(260, 20)
-                    $form.Controls.Add($textBox)
-                    $form.Topmost = $true
-                    $form.Add_Shown({ $textBox.Select() })
+                    $labelText = 'Geef de nieuwe PC_naam in (zoals ingegeven in inventaris):'
+                
+                    Create-DMDataEntryForm -form $form -textBox $textBox -LabelText $labelText
                     $result = $form.ShowDialog()
 
                     if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
@@ -177,34 +133,10 @@ Else {
 
 if ($Serial_Inventory_Check -ge 2) { 
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = 'Data Entry Form'
-    $form.Size = New-Object System.Drawing.Size(300, 200)
-    $form.StartPosition = 'CenterScreen'
-    $okButton = New-Object System.Windows.Forms.Button
-    $okButton.Location = New-Object System.Drawing.Point(75, 120)
-    $okButton.Size = New-Object System.Drawing.Size(75, 23)
-    $okButton.Text = 'OK'
-    $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
-    $form.AcceptButton = $OKButton
-    $form.Controls.Add($OKButton)
-    $cancelButton = New-Object System.Windows.Forms.Button
-    $cancelButton.Location = New-Object System.Drawing.Point(150, 120)
-    $cancelButton.Size = New-Object System.Drawing.Size(75, 23)
-    $cancelButton.Text = 'Cancel'
-    $cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
-    $form.CancelButton = $cancelButton
-    $form.Controls.Add($cancelButton)
-    $label = New-Object System.Windows.Forms.Label
-    $label.Location = New-Object System.Drawing.Point(10, 20)
-    $label.Size = New-Object System.Drawing.Size(280, 40)
-    $label.Text = 'De locale serienummer komt meermaals voor in de inventory, hernoem de locale PC:'
-    $form.Controls.Add($label)
     $textBox = New-Object System.Windows.Forms.TextBox
-    $textBox.Location = New-Object System.Drawing.Point(10, 60)
-    $textBox.Size = New-Object System.Drawing.Size(260, 20)
-    $form.Controls.Add($textBox)
-    $form.Topmost = $true
-    $form.Add_Shown({ $textBox.Select() })
+    $labelText = 'De locale serienummer komt meermaals voor in de inventory, hernoem de locale PC:'
+
+    Create-DMDataEntryForm -form $form -textBox $textBox -LabelText $labelText
     $result = $form.ShowDialog()
     if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
         $GE1 = $textBox.Text
@@ -258,34 +190,10 @@ if ($Serial_Inventory_Check -eq 0) {
             { $Set_Master = $Environment_variabel }
             Else {
                 $form = New-Object System.Windows.Forms.Form
-                $form.Text = 'Data Entry Form'
-                $form.Size = New-Object System.Drawing.Size(300, 200)
-                $form.StartPosition = 'CenterScreen'
-                $okButton = New-Object System.Windows.Forms.Button
-                $okButton.Location = New-Object System.Drawing.Point(75, 120)
-                $okButton.Size = New-Object System.Drawing.Size(75, 23)
-                $okButton.Text = 'OK'
-                $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
-                $form.AcceptButton = $OKButton
-                $form.Controls.Add($OKButton)
-                $cancelButton = New-Object System.Windows.Forms.Button
-                $cancelButton.Location = New-Object System.Drawing.Point(150, 120)
-                $cancelButton.Size = New-Object System.Drawing.Size(75, 23)
-                $cancelButton.Text = 'Cancel'
-                $cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
-                $form.CancelButton = $cancelButton
-                $form.Controls.Add($cancelButton)
-                $label = New-Object System.Windows.Forms.Label
-                $label.Location = New-Object System.Drawing.Point(10, 20)
-                $label.Size = New-Object System.Drawing.Size(280, 20)
-                $label.Text = 'De Master-Clone die u wenst te kopieeren:'
-                $form.Controls.Add($label)
                 $textBox = New-Object System.Windows.Forms.TextBox
-                $textBox.Location = New-Object System.Drawing.Point(10, 40)
-                $textBox.Size = New-Object System.Drawing.Size(260, 20)
-                $form.Controls.Add($textBox)
-                $form.Topmost = $true
-                $form.Add_Shown({ $textBox.Select() })
+                $labelText = 'De Master-Clone die u wenst te kopieeren:'
+                Create-DMDataEntryForm -form $form -textBox $textBox -LabelText $labelText
+
                 $result = $form.ShowDialog()
                 if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
                     $x = $textBox.Text
@@ -343,8 +251,6 @@ if ($Serial_Inventory_Check -eq 0) {
 
             }
 
-
-
             $POST_response = (Invoke-RestMethod -Method POST -Uri $url_POST -Headers $header -Body $Body) 
             Write-Host "POST response is $POST_response"
 
@@ -368,8 +274,6 @@ if ($Serial_Inventory_Check -eq 0) {
                 $msgBoxInput = [System.Windows.MessageBox]::Show("Het script heeft correct gelopen; nieuwe PC-naam is $Get_local_Name; Win10_Key is $Win10_Key", 'Deelbaarmechelen Clone station', 'YesNo', 'Error')
             }
 
-
-
         } 'No' {
             exit
             <#Waarvoor dient deze exit#>
@@ -377,4 +281,40 @@ if ($Serial_Inventory_Check -eq 0) {
     }
 
 
+}
+
+function Create-DMDataEntryForm {
+    param (
+        $form,
+        $textBox,
+        $LabelText
+    )
+    $form.Text = 'Data Entry Form'
+    $form.Size = New-Object System.Drawing.Size(300, 200)
+    $form.StartPosition = 'CenterScreen'
+    $okButton = New-Object System.Windows.Forms.Button
+    $okButton.Location = New-Object System.Drawing.Point(75, 120)
+    $okButton.Size = New-Object System.Drawing.Size(75, 23)
+    $okButton.Text = 'OK'
+    $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
+    $form.AcceptButton = $OKButton
+    $form.Controls.Add($OKButton)
+    $cancelButton = New-Object System.Windows.Forms.Button
+    $cancelButton.Location = New-Object System.Drawing.Point(150, 120)
+    $cancelButton.Size = New-Object System.Drawing.Size(75, 23)
+    $cancelButton.Text = 'Cancel'
+    $cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+    $form.CancelButton = $cancelButton
+    $form.Controls.Add($cancelButton)
+    $label = New-Object System.Windows.Forms.Label
+    $label.Location = New-Object System.Drawing.Point(10, 20)
+    $label.Size = New-Object System.Drawing.Size(280, 40)
+    $label.Text = $LabelText
+    $form.Controls.Add($label)
+    $textBox.Location = New-Object System.Drawing.Point(10, 60)
+    $textBox.Size = New-Object System.Drawing.Size(260, 20)
+    $form.Controls.Add($textBox)
+    $form.Topmost = $true
+    $form.Add_Shown({ $textBox.Select() })
+    #no return needed, as $form is provided as parameter  
 }
