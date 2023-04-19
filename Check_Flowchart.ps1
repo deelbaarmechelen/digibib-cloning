@@ -9,6 +9,7 @@ param (
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 function Create-DMDataEntryForm {
+    <# See also https://learn.microsoft.com/en-us/powershell/scripting/samples/creating-a-custom-input-box?view=powershell-7.3 #>
     param (
         $form,
         $textBox,
@@ -64,6 +65,11 @@ function Check-AssetExists
 $ScriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 Write-Host "Uw scripts staan op $ScriptDir"
 
+if ($API_Key -eq $null -or $baseUrl -eq $null) {
+    Write-Host "Ongeldige API key en/of inventaris (base) url"
+    Write-Host "Syntax: Check_Flowchart.ps1 -API_Key <API key> -baseUrl <inventaris (base) url>"
+    exit
+}
 #uncomment to target test environment
 #$test_env = 'Y'
 #If ($test_env -eq 'Y') {
