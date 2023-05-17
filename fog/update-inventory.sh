@@ -21,25 +21,6 @@ inventory_token=$(cat "$token_file")
 status_id_maintenance=1
 model_id_dell_latitude_5780=2
 
-# Extra doc
-# Curl request samples:
-# https://reqbin.com/curl
-# 
-# curl -X POST https://reqbin.com/echo/post/json
-#    -H 'Content-Type: application/json'
-#    -d '{"login":"my_login","password":"my_password"}'
-# curl https://reqbin.com/echo/get/json
-#    -H "Accept: application/json"
-#    -H "Authorization: Bearer {token}"
-# 
-# Parse json:
-# https://stedolan.github.io/jq/
-# e.g. echo {\"id\":4} | ./jq-linux64 '.'
-# https://www.baeldung.com/linux/json-shell-parse-validate-print
-# 
-# https://stackoverflow.com/questions/2220301/how-to-evaluate-http-response-codes-from-bash-shell-script
-# https://everything.curl.dev/usingcurl/verbose/writeout
-
 # Functions
 ###########
 
@@ -194,34 +175,3 @@ fi
 ### 4. Create entry with tag & serial number
 ### -> success -> log success message and exit
 ### -> not succes -> log error message and exit
-
-
-echo "sandbox area"
-#httpRequest https://inventory.test.klusbib.be/api/v1/hardware content http_code
-#httpRequest https://inventory.test.klusbib.be/api/v1/hardware/byserial/444%20760%20597 content http_code
-#https://snipe-it.readme.io/reference/hardware-by-asset-tag
-httpRequest https://inventory.test.klusbib.be/api/v1/hardware/bytag/KB-000-20-123 content http_code
-echo "content=$content"
-echo "httpcode=$http_code"
-json="$content"
-echo "json=$json" 
-echo $json | ./jq-linux64 '.'
-echo $json | ./jq-linux64 '. | { status :.status}'
-echo $json | ./jq-linux64 '. | { serial :.serial, asset_tag :.asset_tag}'
-
-# not found?:
-# content={"status":"error","messages":"Asset not found","payload":null}
-# httpcode=200
-# json={"status":"error","messages":"Asset not found","payload":null}
-# {
-#   "status": "error",
-#   "messages": "Asset not found",
-#   "payload": null
-# }
-
-httpRequest https://inventory.test.klusbib.be/api/v1/hardware/byserial/123 content http_code
-#content=$(httpRequest https://www.google.be)
-#httpRequest https://www.google.be content
-
-echo "content=$content"
-echo "httpcode=$http_code"
