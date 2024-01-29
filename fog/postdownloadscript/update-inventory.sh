@@ -77,6 +77,8 @@ httpRequest() {
     echo "__url"=${__url}
     echo "__httpbodyvar"=${__httpbodyvar}
     echo "__httpresponsecodevar"=${__httpresponsecodevar}
+    echo "__token"=${__token}
+    echo "__body"=${__body}
     echo "__urlparam"=${__urlparam}
 
     local __response=''
@@ -153,7 +155,9 @@ getInventoryModelId() {
     rowcount=$(echo $content | $jq_bin '.total')
     if [[ $rowcount -eq 0 ]]; then 
       ### -> model not found -> create it
-      echo "Model entry '$__modelnameforquery' not found -> using default model id $__model_id"
+      echo "Model entry '$__modelnameforquery' not found -> creating..."
+      createInventoryModel "$__modelnameforquery" $default_model_category "${inventory_token}" $__result_var
+      return
     fi 
     if [[ $rowcount -gt 0 ]]; then
       ### check for exact match
@@ -168,8 +172,10 @@ getInventoryModelId() {
           return
         fi
       done
-      # create model?
-      echo "Model entry '$__modelnameforquery' not found -> using default model id $__model_id"
+      # create model
+      echo "Model entry '$__modelnameforquery' not found -> creating..."
+      createInventoryModel "$__modelnameforquery" $default_model_category "${inventory_token}" $__result_var
+      return
     fi 
   else
     echo "Query on models failed with http code $http_code (url=$__url)"
@@ -180,11 +186,32 @@ getInventoryModelId() {
 }
 
 createInventoryModel() {
-      ### -> model not found -> create it
-      httpRequest ${inventory_host}/api/v1/models content http_code "POST" $__token "{\"model_id\": \"$__model\"}"
-      echo $content
-      echo $http_code
+  local __model_name=${1}
+  local __category_id=${2:-$default_category_id}
+  local __token=${3}
+  local __result_var=${4}
+  local __model_id=$default_model_id
+  local __content=
+  local __http_code=
 
+  echo "__model_name"=${__model_name}
+  echo "__category_id"=${__category_id}
+  echo "__token"=${__token}
+  echo "__result_var"=${__result_var}
+
+  ### -> model not found -> create it
+  httpRequest ${inventory_host}/api/v1/models content http_code "POST" $__token "{\"name\": \"$__model_name\", \"category_id\": \"$__category_id\"}"
+  echo $content
+  echo $http_code
+  local __status=$(echo $content | $jq_bin ".status")
+  echo "__status"=${__status}
+
+  if [[ "${__status:1: -1}" == "success" ]]; then 
+    echo "model $__model_name created"
+    __model_id=$(echo $content | $jq_bin ".payload.id")
+    echo "__model_id=$__model_id"
+  fi
+  eval $__result_var="'$__model_id'"
 }
 
 ########
