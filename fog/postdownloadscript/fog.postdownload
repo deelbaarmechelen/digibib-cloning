@@ -1,0 +1,14 @@
+#!/bin/bash
+## This file serves as a starting point to call your custom postimaging scripts.
+## <SCRIPTNAME> should be changed to the script you're planning to use.
+## Syntax of post download scripts are
+#. ${postdownpath}<SCRIPTNAME>
+echo ""
+echo "postdownpath=${postdownpath}"
+echo "Directory listing for postdownpath:"
+ls -laht $postdownpath
+echo "Calling notify inventory script";
+debugPause
+. ${postdownpath}fog.notifyinventory.sh
+echo "script completed"
+debugPause
