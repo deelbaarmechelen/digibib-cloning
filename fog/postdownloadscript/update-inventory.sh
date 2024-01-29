@@ -17,7 +17,7 @@
 # inventory hostname
 echo ""
 #postdownpath=/images/postdownloadscripts/
-postdownpath=/mnt/c/Users/Bernard/Documents/postdownloadscript/
+postdownpath=/mnt/c/Users/Bernard/Documents/GitHub/digibib-cloning/fog/postdownloadscript/
 echo "postdownpath=${postdownpath}"
 echo "Running update inventory script";
 
@@ -27,15 +27,20 @@ token_file=${postdownpath}inventory.token
 jq_bin=${postdownpath}jq-linux64
 inventory_token=$(cat "$token_file")
 status_id_maintenance=1
-model_id_dell_latitude_5780=2
-unknown_model=30
-default_model_id=${unknown_model}
+unknown_model_id=30
+unknown_model_name="Onbekend"
+model_category_laptop=3
+default_tag="dummy"
+default_serial="0000"
+default_model_id=${unknown_model_id}
+default_model_name=${unknown_model_name}
+default_model_category=${model_category_laptop}
 echo "inventory_host=${inventory_host}"
 echo "token_file=${token_file}"
 echo "inventory_token=${inventory_token}"
 echo "status_id_maintenance=${status_id_maintenance}"
-echo "model_id_dell_latitude_5780=${model_id_dell_latitude_5780}"
 echo "default_model_id"=${default_model_id}
+echo "default_model_name"=${default_model_name}
 
 # Functions
 ###########
@@ -66,10 +71,13 @@ httpRequest() {
     local __httpverb=${4:-GET}
     local __token=${5}
     local __body=${6:-''}
+    #local __urlparam="${7// /%20}"
+    local __urlparam="${7}"
 
-    #echo "__url"=${__url}
-    #echo "__httpbodyvar"=${__httpbodyvar}
-    #echo "__httpresponsecodevar"=${__httpresponsecodevar}
+    echo "__url"=${__url}
+    echo "__httpbodyvar"=${__httpbodyvar}
+    echo "__httpresponsecodevar"=${__httpresponsecodevar}
+    echo "__urlparam"=${__urlparam}
 
     local __response=''
     # FIXME: enabling -k option on curl due to ssl certificate issue on inventory calls
@@ -78,9 +86,15 @@ httpRequest() {
       __response=$(curl -k --url $__url -X $__httpverb -H 'Content-Type: application/json' -H 'accept: application/json' -H "Authorization: Bearer ${__token}" -d "${__body}" -s -w "\n%{http_code}"  )
       set +x # turn off echo of command
     else
-      set -x # enable echo of command
-      __response=$(curl -k -X $__httpverb -H 'Content-Type: application/json' -H "Authorization: Bearer ${__token}" -s -w "\n%{http_code}" $__url)
-      set +x # turn off echo of command
+      if [[ -n $__urlparam ]]; then
+        set -x # enable echo of command
+        __response=$(curl -k -G -X $__httpverb -H 'Content-Type: application/json' -H "Authorization: Bearer ${__token}" --data-urlencode "$__urlparam" -s -w "\n%{http_code}" $__url)
+        set +x # turn off echo of command
+      else
+        set -x # enable echo of command
+        __response=$(curl -k -X $__httpverb -H 'Content-Type: application/json' -H "Authorization: Bearer ${__token}" -s -w "\n%{http_code}" $__url)
+        set +x # turn off echo of command
+      fi
     fi
     local __http_code=$(tail -n1 <<< "$__response")  # get the last line
     local __content=$(sed '$ d' <<< "$__response")   # get all but the last line which contains the status code ('$' marks last line, 'd' marks deletion)
@@ -120,16 +134,17 @@ getInventoryModelId() {
   local __modelnameforquery=${1}
   local __token=${2}
   local __result_var=${3}
-  local __model_id=${4}
+  local __model_id=${4:-$default_model_id}
   local __model_name=' '
 
-  local __url=${inventory_host}/api/v1/models?limit=50\&offset=0\&search=${__modelnameforquery// /%20}
+  #local __url=${inventory_host}/api/v1/models?limit=50\&offset=0\&search=${__modelnameforquery// /%20}
+  local __url=${inventory_host}/api/v1/models
   #echo "__url"=${__url}
   #echo "__token"=${__token}
   #echo "__modelnameforquery"=${__modelnameforquery}
   #echo "__result_var"=${__result_var}
 
-  httpRequest $__url content http_code GET $inventory_token
+  httpRequest $__url content http_code GET $inventory_token '' "search=$__modelnameforquery"
   echo $content
   echo $http_code
 
@@ -138,27 +153,23 @@ getInventoryModelId() {
     rowcount=$(echo $content | $jq_bin '.total')
     if [[ $rowcount -eq 0 ]]; then 
       ### -> model not found -> create it
-      httpRequest ${inventory_host}/api/v1/models content http_code "POST" $__token "{\"model_id\": \"$__model\"}"
-      echo $content
-      echo $http_code
+      echo "Model entry '$__modelnameforquery' not found -> using default model id $__model_id"
     fi 
-    if [[ $rowcount -eq 1 ]]; then 
-      ### -> model found -> get model id
-      __model_name=$(echo $content | $jq_bin '.rows[0].name')
-      # remove start and end quote of retrieved model name
-      #echo "__model_name"=${__model_name:1: -1}
-      #echo "__modelnameforquery"=${__modelnameforquery}
-      if [[ "${__model_name:1: -1}" == "$__modelnameforquery" ]]; then 
-        echo "model names are equal"
-        __model_id=$(echo $content | $jq_bin '.rows[0].id')
-        eval $__result_var="'$__model_id'"
-      fi
-    fi 
-    if [[ $rowcount -gt 1 ]]; then
-      ### FIXME: check for exact match
-      echo "Found more than 1 entry with model $__modelnameforquery -> automatic inventory update not possible"
-      echo "Cannot proceed, exiting..."
-      exit 1
+    if [[ $rowcount -gt 0 ]]; then
+      ### check for exact match
+      for ((i=0; i<$rowcount; i++)); do 
+        __model_name=$(echo $content | $jq_bin ".rows[$i].name")
+        echo "__model_name"=${__model_name:1: -1}
+        echo "__modelnameforquery"=${__modelnameforquery}
+        if [[ "${__model_name:1: -1}" == "$__modelnameforquery" ]]; then 
+          echo "model names are equal"
+          __model_id=$(echo $content | $jq_bin ".rows[$i].id")
+          eval $__result_var="'$__model_id'"
+          return
+        fi
+      done
+      # create model?
+      echo "Model entry '$__modelnameforquery' not found -> using default model id $__model_id"
     fi 
   else
     echo "Query on models failed with http code $http_code (url=$__url)"
@@ -167,23 +178,32 @@ getInventoryModelId() {
     exit 1
   fi
 }
+
+createInventoryModel() {
+      ### -> model not found -> create it
+      httpRequest ${inventory_host}/api/v1/models content http_code "POST" $__token "{\"model_id\": \"$__model\"}"
+      echo $content
+      echo $http_code
+
+}
+
 ########
 # Main #
 ########
 
 ### 1. Get serial number & fog tag
 ###    from command line args: $1=tag $2=serial number
-tag=${1:-KB-000-20-123}
-serial=${2:-'444 760 597'}
-model_id=${3:-$default_model_id}
+tag=${1:-$default_tag}
+serial=${2:-$default_serial}
+model_name=${3:-$default_model_name}
+model_id=${4:-$default_model_id}
 
 ###    or from a query to fog server
 # to be completed
 ###  Lookup model id
 #modelnameforquery="Makita Boorhamer"
-modelnameforquery="MagicModel"
 
-getInventoryModelId "$modelnameforquery" "${inventory_token}" model_id
+getInventoryModelId "$model_name" "${inventory_token}" model_id
 echo "model_id"=${model_id}
 ###    or fallback to local query for serial number? sudo dmidecode -s system-serial-number
 # to be completed
@@ -191,6 +211,8 @@ echo "model_id"=${model_id}
 ### 2. Query with serial numer
 echo "Query with serial number"
 serialforquery=${serial// /%20} #replace spaces by '%20'
+serialforquery=${serialforquery//&/%26} #replace & by '%26'
+serialforquery=${serialforquery//&/%26} #replace & by '%26'
 url=${inventory_host}/api/v1/hardware/byserial/${serialforquery}
 httpRequest $url content http_code GET $inventory_token
 echo "content=$content"

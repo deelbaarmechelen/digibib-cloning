@@ -75,6 +75,9 @@ echo "nameserver 192.168.24.1" >> /etc/resolv.conf
 #TAG=$mbasset
 #TAG=$othertag
 TAG=$hostname
+BRAND=$sysman
+MODEL=$sysproduct
 #SERIAL_NUMBER=123456
 SERIAL_NUMBER=$sysserial
-${postdownpath}update-inventory.sh $TAG $SERIAL_NUMBER
+MODEL_NAME="$BRAND-$MODEL"
+${postdownpath}update-inventory.sh $TAG $SERIAL_NUMBER $MODEL_NAME
